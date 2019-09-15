@@ -4,7 +4,7 @@ interface
 
 uses Windows, Winapi.Messages;
 
-function StartMouseKeyHook(hWnd: HWND): Boolean; stdcall;
+function StartMouseKeyHook(hWnd: hWnd): Boolean; stdcall;
 procedure StopMouseKeyHook; stdcall;
 
 implementation
@@ -14,7 +14,7 @@ type
 
   THookInfo = record
     HookMouseKey: HHook;
-    HostWnd: HWND;
+    HostWnd: hWnd;
   end;
 
 var
@@ -34,7 +34,7 @@ begin
   pMap := MapViewOfFile(hMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
   if pMap = nil then
   begin
-    result := -1;
+    result := -2;
     CloseHandle(hMap);
     Exit;
   end;
@@ -65,29 +65,29 @@ begin
       PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP + $100, wPar, 0);
     result := CallNextHookEx(PHookInfo(lpMap)^.HookMouseKey, nCode, wPar, lPar);
   end;
-  UnMapFileMemory(LMapWnd,lpMap);
+  UnMapFileMemory(LMapWnd, lpMap);
 end;
 
-function StartMouseKeyHook(hWnd: HWND): Boolean; stdcall;
+function StartMouseKeyHook(hWnd: hWnd): Boolean; stdcall;
 var
   lpMap: Pointer;
   lpMapWnd: THandle;
 begin
-  result:=false;
-  MapFileMemory(lpMapWnd,lpMap);
+  result := false;
+  MapFileMemory(lpMapWnd, lpMap);
   if lpMap = nil then
   begin
-    lpMapWnd:=0;
-    exit;
+    lpMapWnd := 0;
+    Exit;
   end;
   with PHookInfo(lpMap)^ do
   begin
-    HostWnd:=hWnd;
-    HookMouseKey:=SetWindowsHookEx(lpMapWnd,MouseKeyHookProc,hInstance,0);
+    HostWnd := hWnd;
+    HookMouseKey := SetWindowsHookEx(lpMapWnd, MouseKeyHookProc, hInstance, 0);
     if HookMouseKey > 0 then
-      result:=true;
+      result := true;
   end;
-  UnMapFileMemory(lpMapWnd,lpMap);
+  UnMapFileMemory(lpMapWnd, lpMap);
 end;
 
 procedure StopMouseKeyHook; stdcall;
@@ -100,10 +100,13 @@ begin
 end;
 
 initialization
-  hMapFile:=CreateFileMapping(High(NativeUInt),nil,PAGE_READWRITE,0,SizeOf(THookInfo),MapFileName);
+
+hMapFile := CreateFileMapping(High(NativeUInt), nil, PAGE_READWRITE, 0,
+  SizeOf(THookInfo), MapFileName);
 
 finalization
-  if hMapFile <> 0 then
-    CloseHandle(hMapFile);
+
+if hMapFile <> 0 then
+  CloseHandle(hMapFile);
 
 end.

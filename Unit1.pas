@@ -26,11 +26,15 @@ implementation
 
 {$R *.dfm}
 
+function ChangeWindowMessageFilterEx(Msg: HWND; uInt: UInt; dwFlag:DWORD; int:integer): Boolean; stdcall; external 'user32.dll';
+
 function StartMouseKeyHook(hWnd: HWND): Boolean; stdcall; external 'keyhook.dll';
 procedure StopMouseKeyHook; stdcall; external 'keyhook.dll';
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+  if @ChangeWindowMessageFilterEx <> nil then
+    ChangeWindowMessageFilterEx(Handle,WM_APP+$100,MSGFLT_ADD,0);
   StartMouseKeyHook(Handle);
 end;
 
