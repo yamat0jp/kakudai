@@ -14,7 +14,7 @@ type
 
   THookInfo = record
     HookMouseKey: HHook;
-    HostWnd: hWnd;
+    HostWnd: HWND;
   end;
 
 var
@@ -55,6 +55,7 @@ var
   lpMap: Pointer;
   LMapWnd: THandle;
 begin
+  result:=0;
   if MapFileMemory(LMapWnd, lpMap) = 0 then
     Exit;
   if nCode < 0 then
@@ -68,35 +69,36 @@ begin
   UnMapFileMemory(LMapWnd, lpMap);
 end;
 
-function StartMouseKeyHook(hWnd: hWnd): Boolean; stdcall;
+function StartMouseKeyHook(hWnd: HWND): Boolean; stdcall;
 var
   lpMap: Pointer;
-  lpMapWnd: THandle;
+  LMapWnd: THandle;
 begin
   result := false;
-  MapFileMemory(lpMapWnd, lpMap);
+  MapFileMemory(LMapWnd, lpMap);
   if lpMap = nil then
   begin
-    lpMapWnd := 0;
+    LMapWnd := 0;
     Exit;
   end;
   with PHookInfo(lpMap)^ do
   begin
     HostWnd := hWnd;
-    HookMouseKey := SetWindowsHookEx(lpMapWnd, MouseKeyHookProc, hInstance, 0);
+    HookMouseKey := SetWindowsHookEx(WH_JOURNALRECORD, Addr(MouseKeyHookProc), hInstance, 0);
     if HookMouseKey > 0 then
       result := true;
   end;
-  UnMapFileMemory(lpMapWnd, lpMap);
+  UnMapFileMemory(LMapWnd, lpMap);
 end;
 
 procedure StopMouseKeyHook; stdcall;
 var
   lpMap: Pointer;
-  lpMapWnd: THandle;
+  LMapWnd: THandle;
 begin
   if PHookInfo(lpMap)^.HookMouseKey > 0 then
     UnHookWindowsHookEx(PHookInfo(lpMap)^.HookMouseKey);
+  UnMapFileMemory(LMapWnd,lpMap);
 end;
 
 initialization
