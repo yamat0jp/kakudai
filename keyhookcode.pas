@@ -4,8 +4,8 @@ interface
 
 uses Windows, Winapi.Messages;
 
-function StartMouseKeyHook(hWnd: hWnd): Boolean; stdcall;
-procedure StopMouseKeyHook; stdcall;
+function StartMouseIMEHook(hWnd: hWnd): Boolean; stdcall;
+procedure StopMouseIMEHook; stdcall;
 
 implementation
 
@@ -13,15 +13,16 @@ type
   PHookInfo = ^THookInfo;
 
   THookInfo = record
-    HookMouseKey: HHook;
-    HostWnd: HWND;
+    HookMouse: HHook;
+    HookIME: HHook;
+    HostWnd: hWnd;
   end;
 
 var
   hMapFile: THandle;
 
 const
-  MapFileName = 'keyhook.dll';
+  MapFileName = 'keyhook';
 
 function MapFileMemory(hMap: THandle; pMap: Pointer): integer;
 begin
@@ -49,27 +50,46 @@ begin
     CloseHandle(hMap);
 end;
 
-function MouseKeyHookProc(nCode: integer; wPar: WPARAM; lPar: LPARAM)
+function MouseHookProc(nCode: integer; wPar: WPARAM; lPar: LPARAM)
   : LRESULT; stdcall;
 var
   lpMap: Pointer;
   LMapWnd: THandle;
 begin
-  result:=0;
+  result := 0;
   if MapFileMemory(LMapWnd, lpMap) = 0 then
     Exit;
   if nCode < 0 then
-    result := CallNextHookEx(PHookInfo(lpMap)^.HookMouseKey, nCode, wPar, lPar)
+    result := CallNextHookEx(PHookInfo(lpMap)^.HookMouse, nCode, wPar, lPar)
   else
   begin
     if nCode = HC_ACTION then
       PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP + $100, wPar, 0);
-    result := CallNextHookEx(PHookInfo(lpMap)^.HookMouseKey, nCode, wPar, lPar);
+    result := CallNextHookEx(PHookInfo(lpMap)^.HookMouse, nCode, wPar, lPar);
   end;
   UnMapFileMemory(LMapWnd, lpMap);
 end;
 
-function StartMouseKeyHook(hWnd: HWND): Boolean; stdcall;
+function IMEHookProc(nCode: integer; wPar: WPARAM; lPar: LPARAM)
+  : LRESULT; stdcall;
+var
+  lpMap: Pointer;
+  LMapWnd: THandle;
+begin
+  result := 0;
+  if MapFileMemory(LMapWnd, lpMap) = 0 then
+    Exit;
+  if nCode < 0 then
+    result := CallNextHookEx(PHookInfo(lpMap)^.HookIME, nCode, wPar, lPar)
+  else
+  begin
+    if nCode = HC_ACTION then
+      PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP + $110, wPar, 0);
+  end;
+  UnMapFileMemory(LMapWnd, lpMap);
+end;
+
+function StartMouseIMEHook(hWnd: hWnd): Boolean; stdcall;
 var
   lpMap: Pointer;
   LMapWnd: THandle;
@@ -84,21 +104,25 @@ begin
   with PHookInfo(lpMap)^ do
   begin
     HostWnd := hWnd;
-    HookMouseKey := SetWindowsHookEx(WH_JOURNALRECORD, Addr(MouseKeyHookProc), hInstance, 0);
-    if HookMouseKey > 0 then
+    HookMouse := SetWindowsHookEx(WH_MOUSE, Addr(MouseHookProc), hInstance, 0);
+    HookIME := SetWindowsHookEx(WH_CALLWNDPROC, Addr(IMEHookProc),
+      hInstance, 0);
+    if (HookMouse > 0) and (HookIME > 0) then
       result := true;
   end;
   UnMapFileMemory(LMapWnd, lpMap);
 end;
 
-procedure StopMouseKeyHook; stdcall;
+procedure StopMouseIMEHook; stdcall;
 var
   lpMap: Pointer;
   LMapWnd: THandle;
 begin
-  if PHookInfo(lpMap)^.HookMouseKey > 0 then
-    UnHookWindowsHookEx(PHookInfo(lpMap)^.HookMouseKey);
-  UnMapFileMemory(LMapWnd,lpMap);
+  if PHookInfo(lpMap)^.HookMouse > 0 then
+    UnHookWindowsHookEx(PHookInfo(lpMap)^.HookMouse);
+  if PHookInfo(lpMap)^.HookIME > 0 then
+    UnHookWindowsHookEx(PHookInfo(lpMap)^.HookIME);
+  UnMapFileMemory(LMapWnd, lpMap);
 end;
 
 initialization

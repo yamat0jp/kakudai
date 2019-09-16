@@ -14,8 +14,8 @@ uses
   keyhookcode in 'keyhookcode.pas';
 
 exports
-  StartMouseKeyHook,
-  StopMouseKeyHook;
+  StartMouseIMEHook,
+  StopMouseIMEHook;
 
 begin
 

@@ -15,6 +15,7 @@ type
   private
     { Private êÈåæ }
     procedure WMAPP100(var Msg: TMessage); message WM_APP + $100;
+    procedure WMAPP110(var Msg: TMessage); message WM_APP + $110;
   public
     { Public êÈåæ }
   end;
@@ -30,22 +31,26 @@ function ChangeWindowMessageFilter(Msg: HWND; dwFlag: DWORD): Boolean; stdcall;
 function ChangeWindowMessageFilterEx(Msg: HWND; uInt: uInt; dwFlag: DWORD;
   int: integer): Boolean; stdcall; external 'user32.dll';
 
-function StartMouseKeyHook(HWND: HWND): Boolean; stdcall;
+function StartMouseIMEHook(HWND: HWND): Boolean; stdcall;
   external 'keyhook.dll';
-procedure StopMouseKeyHook; stdcall; external 'keyhook.dll';
+procedure StopMouseIMEHook; stdcall; external 'keyhook.dll';
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   if @ChangeWindowMessageFilterEx <> nil then
+  begin
     ChangeWindowMessageFilter(WM_APP + $100, MSGFLT_ADD);
-  // ChangeWindowMessageFilterEx(Handle,WM_APP+$100,MSGFLT_ALLOW,0);
-  StartMouseKeyHook(Handle);
+    // ChangeWindowMessageFilterEx(Handle,WM_APP+$100,MSGFLT_ALLOW,0);
+    ChangeWindowMessageFilter(WM_APP + $110, MSGFLT_ADD);
+  end;
+  StartMouseIMEHook(Handle);
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
   ChangeWindowMessageFilter(WM_APP + $100, MSGFLT_REMOVE);
-  StopMouseKeyHook;
+  ChangeWindowMessageFilter(WM_APP + $110, MSGFLT_REMOVE);
+  StopMouseIMEHook;
 end;
 
 procedure TForm1.WMAPP100(var Msg: TMessage);
@@ -59,6 +64,11 @@ begin
     WM_KEYDOWN:
       Show;
   end;
+end;
+
+procedure TForm1.WMAPP110(var Msg: TMessage);
+begin
+
 end;
 
 end.

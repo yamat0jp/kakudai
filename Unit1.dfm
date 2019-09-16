@@ -20,7 +20,7 @@ object Form1: TForm1
   TextHeight = 13
   object Timer1: TTimer
     Interval = 200
-    Left = 288
-    Top = 88
+    Left = 120
+    Top = 40
   end
 end
