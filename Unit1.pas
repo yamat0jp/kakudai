@@ -15,8 +15,8 @@ type
     procedure Timer1Timer(Sender: TObject);
   private
     { Private éŒ¾ }
-    procedure WMAPP100(var Msg: TMessage); message WM_APP;
-    procedure WMAPP110(var Msg: TMessage); message WM_APP + 1;
+    procedure WMAPP(var Msg: TMessage); message WM_APP;
+    procedure WMAPP1(var Msg: TMessage); message WM_APP + 1;
   public
     { Public éŒ¾ }
   end;
@@ -62,14 +62,14 @@ begin
       Left := Left - 10;
     if Top > p.Y then
       Top := Top - 10;
-    if Left + ClientWidth < p.X then
+    if Left + ClientWidth div 4 < p.X then
       Left := Left + 10;
-    if Top + ClientHeight < p.Y then
+    if Top + ClientHeight div 2 < p.Y then
       Top := Top + 10;
   end;
 end;
 
-procedure TForm1.WMAPP100(var Msg: TMessage);
+procedure TForm1.WMAPP(var Msg: TMessage);
 var
   pEvent: PEventMSG;
 begin
@@ -82,7 +82,7 @@ begin
   end;
 end;
 
-procedure TForm1.WMAPP110(var Msg: TMessage);
+procedure TForm1.WMAPP1(var Msg: TMessage);
 begin
   Hide;
 end;
