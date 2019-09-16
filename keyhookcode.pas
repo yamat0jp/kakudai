@@ -24,7 +24,7 @@ var
 const
   MapFileName = 'keyhook';
 
-function MapFileMemory(hMap: THandle; pMap: Pointer): integer;
+function MapFileMemory(out hMap: THandle; out pMap: Pointer): integer;
 begin
   hMap := OpenFileMapping(FILE_MAP_ALL_ACCESS, false, MapFileName);
   if hMap = 0 then
