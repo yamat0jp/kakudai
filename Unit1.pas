@@ -26,9 +26,9 @@ var
 implementation
 
 {$R *.dfm}
-function ChangeWindowMessageFilter(Msg: HWND; dwFlag: DWORD): Boolean; stdcall;
+function ChangeWindowMessageFilter(Msg: Cardinal; dwFlag: DWORD): Boolean; stdcall;
   external 'user32.dll';
-function ChangeWindowMessageFilterEx(Msg: HWND; uInt: uInt; dwFlag: DWORD;
+function ChangeWindowMessageFilterEx(hWnd: HWND; Msgt: Cardinal; dwFlag: DWORD;
   int: integer): Boolean; stdcall; external 'user32.dll';
 
 function StartMouseIMEHook(HWND: HWND): Boolean; stdcall;
@@ -37,12 +37,10 @@ procedure StopMouseIMEHook; stdcall; external 'keyhook.dll';
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  if @ChangeWindowMessageFilterEx <> nil then
-  begin
-    ChangeWindowMessageFilter(WM_APP + $100, MSGFLT_ADD);
-    // ChangeWindowMessageFilterEx(Handle,WM_APP+$100,MSGFLT_ALLOW,0);
-    ChangeWindowMessageFilter(WM_APP + $110, MSGFLT_ADD);
-  end;
+  //ChangeWindowMessageFilter(WM_APP + $100, MSGFLT_ADD);
+  ChangeWindowMessageFilterEx(Handle,WM_APP+$100,MSGFLT_ADD,0);
+  ChangeWindowMessageFilterEx(Handle,WM_APP+$110,MSGFLT_ADD,0);
+//  ChangeWindowMessageFilter(WM_APP + $110, MSGFLT_ADD);
   StartMouseIMEHook(Handle);
 end;
 
@@ -68,7 +66,7 @@ end;
 
 procedure TForm1.WMAPP110(var Msg: TMessage);
 begin
-
+  Hide;
 end;
 
 end.
