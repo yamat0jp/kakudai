@@ -55,6 +55,7 @@ function MouseHookProc(nCode: integer; wPar: WPARAM; lPar: LPARAM)
 var
   lpMap: Pointer;
   LMapWnd: THandle;
+  msg: PMsg;
 begin
   result := 0;
   if MapFileMemory(LMapWnd, lpMap) = 0 then
@@ -63,8 +64,10 @@ begin
     result := CallNextHookEx(PHookInfo(lpMap)^.HookMouse, nCode, wPar, lPar)
   else
   begin
-    if nCode = HC_ACTION then
-      PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP + $100, wPar, 0);
+    msg := PMsg(lPar);
+    if (nCode = HC_ACTION) and (wPar = PM_REMOVE) then
+      if msg.hWnd <> PHookInfo(lpMap)^.HostWnd then
+        PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP, msg.message, msg.hWnd);
     result := CallNextHookEx(PHookInfo(lpMap)^.HookMouse, nCode, wPar, lPar);
   end;
   UnMapFileMemory(LMapWnd, lpMap);
@@ -75,6 +78,7 @@ function IMEHookProc(nCode: integer; wPar: WPARAM; lPar: LPARAM)
 var
   lpMap: Pointer;
   LMapWnd: THandle;
+  msg: PMsg;
 begin
   result := 0;
   if MapFileMemory(LMapWnd, lpMap) = 0 then
@@ -83,8 +87,12 @@ begin
     result := CallNextHookEx(PHookInfo(lpMap)^.HookIME, nCode, wPar, lPar)
   else
   begin
-    if nCode = HC_ACTION then
-      PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP + $110, wPar, 0);
+    msg := PMsg(lPar);
+    if (nCode = HC_ACTION) and (wPar = PM_REMOVE) then
+      if msg.hWnd <> PHookInfo(lpMap)^.HostWnd then
+        PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP + 1, msg.message,
+          msg.hWnd);
+    result := CallNextHookEx(PHookInfo(lpMap)^.HookIME, nCode, wPar, lPar);
   end;
   UnMapFileMemory(LMapWnd, lpMap);
 end;
@@ -118,7 +126,7 @@ var
   lpMap: Pointer;
   LMapWnd: THandle;
 begin
-  MapFileMemory(LMapWnd,lpMap);
+  MapFileMemory(LMapWnd, lpMap);
   if lpMap = nil then
     Exit;
   if PHookInfo(lpMap)^.HookMouse > 0 then
