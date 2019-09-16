@@ -60,16 +60,11 @@ begin
   result := 0;
   if MapFileMemory(LMapWnd, lpMap) = 0 then
     Exit;
-  if nCode < 0 then
-    result := CallNextHookEx(PHookInfo(lpMap)^.HookMouse, nCode, wPar, lPar)
-  else
-  begin
-    msg := PMsg(lPar);
-    if (nCode = HC_ACTION) and (wPar = PM_REMOVE) then
-      if msg.hWnd <> PHookInfo(lpMap)^.HostWnd then
-        PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP, msg.message, msg.hWnd);
-    result := CallNextHookEx(PHookInfo(lpMap)^.HookMouse, nCode, wPar, lPar);
-  end;
+  msg := PMsg(lPar);
+  if (nCode = HC_ACTION) and (wPar = PM_REMOVE) then
+    if msg.hWnd <> PHookInfo(lpMap)^.HostWnd then
+      PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP, msg.message, msg.hWnd);
+  result := CallNextHookEx(PHookInfo(lpMap)^.HookMouse, nCode, wPar, lPar);
   UnMapFileMemory(LMapWnd, lpMap);
 end;
 
@@ -83,17 +78,11 @@ begin
   result := 0;
   if MapFileMemory(LMapWnd, lpMap) = 0 then
     Exit;
-  if nCode < 0 then
-    result := CallNextHookEx(PHookInfo(lpMap)^.HookIME, nCode, wPar, lPar)
-  else
-  begin
-    msg := PMsg(lPar);
-    if (nCode = HC_ACTION) and (wPar = PM_REMOVE) then
-      if msg.hWnd <> PHookInfo(lpMap)^.HostWnd then
-        PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP + 1, msg.message,
-          msg.hWnd);
-    result := CallNextHookEx(PHookInfo(lpMap)^.HookIME, nCode, wPar, lPar);
-  end;
+  msg := PMsg(lPar);
+  if (nCode = HC_ACTION) and (wPar = PM_REMOVE) then
+    if msg.hWnd <> PHookInfo(lpMap)^.HostWnd then
+      PostMessage(PHookInfo(lpMap)^.HostWnd, WM_APP + 1, msg.message, msg.hWnd);
+  result := CallNextHookEx(PHookInfo(lpMap)^.HookIME, nCode, wPar, lPar);
   UnMapFileMemory(LMapWnd, lpMap);
 end;
 

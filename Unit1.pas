@@ -12,6 +12,7 @@ type
     Timer1: TTimer;
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
   private
     { Private éŒ¾ }
     procedure WMAPP100(var Msg: TMessage); message WM_APP;
@@ -42,6 +43,30 @@ begin
   ChangeWindowMessageFilter(WM_APP, MSGFLT_REMOVE);
   ChangeWindowMessageFilter(WM_APP + 1, MSGFLT_REMOVE);
   StopMouseIMEHook;
+end;
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+var
+  s1, s2: Cardinal;
+  p: TPoint;
+  i: Integer;
+begin
+  s1 := GetCurrentThreadID;
+  s2 := GetWindowThreadProcessID(GetForegroundWindow);
+  AttachThreadInput(s1, s2, true);
+  GetCaretPos(p);
+  AttachThreadInput(s1, s2, false);
+  for i := 1 to 3 do
+  begin
+    if Left > p.X then
+      Left := Left - 10;
+    if Top > p.Y then
+      Top := Top - 10;
+    if Left + ClientWidth < p.X then
+      Left := Left + 10;
+    if Top + ClientHeight < p.Y then
+      Top := Top + 10;
+  end;
 end;
 
 procedure TForm1.WMAPP100(var Msg: TMessage);
