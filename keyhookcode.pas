@@ -118,6 +118,9 @@ var
   lpMap: Pointer;
   LMapWnd: THandle;
 begin
+  MapFileMemory(LMapWnd,lpMap);
+  if lpMap = nil then
+    Exit;
   if PHookInfo(lpMap)^.HookMouse > 0 then
     UnHookWindowsHookEx(PHookInfo(lpMap)^.HookMouse);
   if PHookInfo(lpMap)^.HookIME > 0 then
